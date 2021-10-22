@@ -164,7 +164,7 @@ public class CandlestickChart {
 
             long left_time_border = conf.getLong("candle.from", Long.MIN_VALUE);
             long right_time_border = conf.getLong("candle.to", Long.MAX_VALUE);
-            if (global_moment < left_time_border || global_moment > right_time_border) return;
+            if (global_moment < left_time_border || global_moment >= right_time_border) return;
 
             context.write(
                 new CandleKey(symbol, moment),
@@ -259,8 +259,8 @@ public class CandlestickChart {
         }
 
         // Add precalculated values
-        conf.setLong("candle.from", parseDate(conf.get("candle.date.from"), conf.get("candle.time.from")));
-        conf.setLong("candle.to", parseDate(conf.get("candle.date.to"), conf.get("candle.time.to")));
+        conf.setLong("candle.from", parseDate(conf.get("candle.date.from"), "0000"));
+        conf.setLong("candle.to", parseDate(conf.get("candle.date.to"), "0000"));
 
         conf.set("candle.output", otherArgs[1]);
 
