@@ -116,7 +116,7 @@ public class CandlestickChart {
 
         @Override
         public String toString() {
-            return open.toString() + "," + high.toString() + "," + low.toString() + "," + close.toString();
+            return String.format("%.1f,%.1f,%.1f,%.1f", open.get(), high.get(), low.get(), close.get());
         }
     }
 
