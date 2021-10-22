@@ -29,16 +29,16 @@ public class CandlestickChart {
 
     public static class CandleKey implements WritableComparable<CandleKey> {
         public Text symbol;
-        public LongWritable moment;
+        public Text moment;
 
         public CandleKey() {
             symbol = new Text();
-            moment = new LongWritable(0L);
+            moment = new Text();
         }
 
-        public CandleKey(String symbol, long moment) {
+        public CandleKey(String symbol, String moment) {
             this.symbol = new Text(symbol);
-            this.moment = new LongWritable(moment);
+            this.moment = new Text(moment);
         }
 
         @Override
@@ -63,7 +63,7 @@ public class CandlestickChart {
 
         @Override
         public String toString() {
-            return symbol.toString() + "," + date_format.format(moment.get());
+            return symbol.toString() + "," + moment.toString();
         }
     }
 
@@ -149,10 +149,13 @@ public class CandlestickChart {
 
             // Prepare key
             String symbol = cols[0];
-            long global_moment = getMomentFromDate(cols[2]);
+            String str_global_moment = cols[2];
+
+            long global_moment = getMomentFromDate(str_global_moment);
             long candle_width = conf.getLong("candle.width", 300000);
-            long candle_from = conf.getLong("candle.from", 0L);
+            long candle_from = getMomentFromDate(conf.getLong("candle.date.from", 0L) + "0000000");
             long moment = ((global_moment - candle_from) / candle_width) * candle_width + candle_from;
+            String str_moment = date_format.format(moment);
 
             // Prepare value
             long left_id = Long.parseLong(cols[3]);
@@ -162,13 +165,14 @@ public class CandlestickChart {
             Pattern p = Pattern.compile(conf.get("candle.securities"));
             if (!p.matcher(symbol).matches()) return;
 
-            long left_time_border = conf.getLong("candle.from", Long.MIN_VALUE);
-            long right_time_border = conf.getLong("candle.to", Long.MAX_VALUE);
-            if (global_moment < left_time_border || global_moment >= right_time_border) return;
+            String left_time_border = conf.get("candle.date.from") + conf.get("candle.time.from") + "000";
+            String right_time_border = conf.get("candle.date.to") + conf.get("candle.date.from") + "000";
+            if (str_global_moment.compareTo(left_time_border) < 0 || str_global_moment.compareTo(right_time_border) >= 0)
+                return;
 
             context.write(
-                new CandleKey(symbol, moment),
-                new CandleValue(left_id, left_id, open, open, open, open)
+                    new CandleKey(symbol, str_moment),
+                    new CandleValue(left_id, left_id, open, open, open, open)
             );
         }
     }
@@ -228,9 +232,6 @@ public class CandlestickChart {
     }
 
     private static final SimpleDateFormat conf_date_format = new SimpleDateFormat("yyyyMMddhhmm");
-    private static long parseDate(String date, String time) throws ParseException {
-        return conf_date_format.parse(date + time).getTime();
-    }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
@@ -257,12 +258,6 @@ public class CandlestickChart {
 
             System.exit(2);
         }
-
-        // Add precalculated values
-        conf.setLong("candle.from", parseDate(conf.get("candle.date.from"), "0000"));
-        conf.setLong("candle.to", parseDate(conf.get("candle.date.to"), "0000"));
-
-        conf.set("candle.output", otherArgs[1]);
 
         Job job = new Job(conf, "candle");
         job.setJarByClass(CandlestickChart.class);
