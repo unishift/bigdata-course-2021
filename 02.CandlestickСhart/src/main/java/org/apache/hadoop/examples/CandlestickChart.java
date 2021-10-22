@@ -1,13 +1,5 @@
 package org.apache.hadoop.examples;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Pattern;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
@@ -16,9 +8,19 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import static java.lang.Math.max;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.regex.Pattern;
 
 public class CandlestickChart {
     private static ArrayList<String> COLUMNS_ORDER = new ArrayList<String>(Arrays.asList(
@@ -173,6 +175,12 @@ public class CandlestickChart {
 
     public static class CandleReducer
             extends Reducer<CandleKey, CandleValue, CandleKey, CandleValue> {
+        MultipleOutputs<CandleKey, CandleValue> multipleOutputs;
+
+        @Override
+        public void setup(Context context) {
+            multipleOutputs = new MultipleOutputs<CandleKey, CandleValue>(context);
+        }
 
         public void reduce(CandleKey key, Iterable<CandleValue> values,
                            Context context
@@ -205,7 +213,17 @@ public class CandlestickChart {
                 if (old_value.low.get() < low) low = old_value.low.get();
             }
 
-            context.write(key, new CandleValue(left_id, right_id, open, high, low, close));
+            CandleValue new_value = new CandleValue(left_id, right_id, open, high, low, close);
+            if (context.getTaskAttemptID().getTaskID().isMap()) {
+                context.write(key, new_value);
+            } else {
+                String path = key.symbol.toString();
+                multipleOutputs.write("output", key, new_value, path);
+            }
+        }
+
+        protected void cleanup(Context context) throws IOException, InterruptedException {
+            multipleOutputs.close();
         }
     }
 
@@ -244,6 +262,8 @@ public class CandlestickChart {
         conf.setLong("candle.from", parseDate(conf.get("candle.date.from"), conf.get("candle.time.from")));
         conf.setLong("candle.to", parseDate(conf.get("candle.date.to"), conf.get("candle.time.to")));
 
+        conf.set("candle.output", otherArgs[1]);
+
         Job job = new Job(conf, "candle");
         job.setJarByClass(CandlestickChart.class);
         job.setMapperClass(CandleMapper.class);
@@ -254,6 +274,7 @@ public class CandlestickChart {
 
         FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
         FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
+        MultipleOutputs.addNamedOutput(job, "output", TextOutputFormat.class, CandleKey.class, CandleValue.class);
 
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
