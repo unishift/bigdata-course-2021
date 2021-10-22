@@ -120,7 +120,7 @@ public class CandlestickChart {
         }
     }
 
-    private static final SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddhhmmssSSS");
+    private static final SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 
     private static long getMomentFromDate(String str_date) throws IOException {
         Date date;
