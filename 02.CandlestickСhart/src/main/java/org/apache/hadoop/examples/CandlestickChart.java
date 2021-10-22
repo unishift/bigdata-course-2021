@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 public class CandlestickChart {
-    private static ArrayList<String> COLUMNS_ORDER = new ArrayList<String>(Arrays.asList(
+    private static final ArrayList<String> COLUMNS_ORDER = new ArrayList<String>(Arrays.asList(
             "#SYMBOL", "SYSTEM", "MOMENT", "ID_DEAL", "PRICE_DEAL", "VOLUME", "OPEN_POS", "DIRECTION"
     ));
 
@@ -120,7 +120,7 @@ public class CandlestickChart {
         }
     }
 
-    private static SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddhhmmssSSS");
+    private static final SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddhhmmssSSS");
 
     private static long getMomentFromDate(String str_date) throws IOException {
         Date date;
@@ -179,7 +179,7 @@ public class CandlestickChart {
 
         @Override
         public void setup(Context context) {
-            multipleOutputs = new MultipleOutputs<CandleKey, CandleValue>(context);
+            multipleOutputs = new MultipleOutputs<>(context);
         }
 
         public void reduce(CandleKey key, Iterable<CandleValue> values,
@@ -227,7 +227,7 @@ public class CandlestickChart {
         }
     }
 
-    private static SimpleDateFormat conf_date_format = new SimpleDateFormat("yyyyMMddhhmm");
+    private static final SimpleDateFormat conf_date_format = new SimpleDateFormat("yyyyMMddhhmm");
     private static long parseDate(String date, String time) throws ParseException {
         return conf_date_format.parse(date + time).getTime();
     }
