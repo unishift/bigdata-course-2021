@@ -1,5 +1,3 @@
-package org.apache.hadoop.examples;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
@@ -22,7 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-public class CandlestickChart {
+public class candle {
     private static final ArrayList<String> COLUMNS_ORDER = new ArrayList<String>(Arrays.asList(
             "#SYMBOL", "SYSTEM", "MOMENT", "ID_DEAL", "PRICE_DEAL", "VOLUME", "OPEN_POS", "DIRECTION"
     ));
@@ -259,7 +257,7 @@ public class CandlestickChart {
         conf.set("mapred.textoutputformat.separator", ",");
 
         Job job = new Job(conf, "candle");
-        job.setJarByClass(CandlestickChart.class);
+        job.setJarByClass(candle.class);
         job.setMapperClass(CandleMapper.class);
         job.setCombinerClass(CandleReducer.class);
         job.setReducerClass(CandleReducer.class);
