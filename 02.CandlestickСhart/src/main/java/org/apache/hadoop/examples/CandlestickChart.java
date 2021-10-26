@@ -235,18 +235,6 @@ public class CandlestickChart {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-
-        // Add default params
-        conf.setLong("candle.width", 300000);
-        conf.set("candle.securities", ".*");
-        conf.set("candle.date.from", "19000101");
-        conf.set("candle.date.to", "20200101");
-        conf.set("candle.time.from", "1000");
-        conf.set("candle.time.to", "1800");
-        conf.setLong("candle.num.reducers", 1L);
-
-        conf.set("mapred.textoutputformat.separator", ",");
-
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
         if (otherArgs.length < 2) {
             System.err.println("Usage: candle <in> <out>");
@@ -258,6 +246,17 @@ public class CandlestickChart {
 
             System.exit(2);
         }
+
+        // Add default params
+        conf.set("candle.width", conf.get("candle.width", "300000"));
+        conf.set("candle.securities", conf.get("candle.securities", ".*"));
+        conf.set("candle.date.from", conf.get("candle.date.from", "19000101"));
+        conf.set("candle.date.to", conf.get("candle.date.to", "20200101"));
+        conf.set("candle.time.from", conf.get("candle.time.from", "1000"));
+        conf.set("candle.time.to", conf.get("candle.time.to", "1800"));
+        conf.set("candle.num.reducers", conf.get("candle.num.reducers", "1"));
+
+        conf.set("mapred.textoutputformat.separator", ",");
 
         Job job = new Job(conf, "candle");
         job.setJarByClass(CandlestickChart.class);
