@@ -266,6 +266,8 @@ public class CandlestickChart {
         job.setOutputKeyClass(CandleKey.class);
         job.setOutputValueClass(CandleValue.class);
 
+        job.setNumReduceTasks(Integer.parseInt(conf.get("candle.num.reducers")));
+
         FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
         FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
         MultipleOutputs.addNamedOutput(job, "output", TextOutputFormat.class, CandleKey.class, CandleValue.class);
