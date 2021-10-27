@@ -165,7 +165,7 @@ public class candle {
             if (!p.matcher(symbol).matches()) return;
 
             String left_time_border = conf.get("candle.date.from") + conf.get("candle.time.from") + "000";
-            String right_time_border = conf.get("candle.date.to") + conf.get("candle.date.from") + "000";
+            String right_time_border = conf.get("candle.date.to") + conf.get("candle.time.to") + "000";
             if (str_global_moment.compareTo(left_time_border) < 0 || str_global_moment.compareTo(right_time_border) >= 0)
                 return;
 
@@ -230,7 +230,7 @@ public class candle {
         }
     }
 
-    private static final SimpleDateFormat conf_date_format = new SimpleDateFormat("yyyyMMddhhmm");
+    private static final SimpleDateFormat conf_date_format = new SimpleDateFormat("yyyyMMdd");
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
@@ -256,6 +256,11 @@ public class candle {
         conf.set("candle.num.reducers", conf.get("candle.num.reducers", "1"));
 
         conf.set("mapred.textoutputformat.separator", ",");
+
+        // Fix date.to format to day before
+        Date date_to = conf_date_format.parse(conf.get("candle.date.to"));
+        date_to = new Date(date_to.getTime() - 24 * 60 * 60 * 1000L);
+        conf.set("candle.date.to", conf_date_format.format(date_to));
 
         Job job = new Job(conf, "candle");
         job.setJarByClass(candle.class);
