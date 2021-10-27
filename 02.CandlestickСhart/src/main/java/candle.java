@@ -1,4 +1,5 @@
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
@@ -265,6 +266,9 @@ public class candle {
         job.setOutputValueClass(CandleValue.class);
 
         job.setNumReduceTasks(Integer.parseInt(conf.get("candle.num.reducers")));
+
+        FileSystem fs = FileSystem.get(new Configuration());
+        fs.delete(new Path(otherArgs[1]), true);
 
         FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
         FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
