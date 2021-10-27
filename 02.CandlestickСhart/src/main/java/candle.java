@@ -64,6 +64,11 @@ public class candle {
         public String toString() {
             return symbol.toString() + "," + moment.toString();
         }
+
+        @Override
+        public int hashCode() {
+            return symbol.toString().hashCode() + moment.toString().hashCode();
+        }
     }
 
     public static class CandleValue implements Writable {
