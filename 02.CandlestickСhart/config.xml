@@ -2,19 +2,11 @@
 
 <configuration>
     <property>
-        <name>candle.securities</name>
-        <value>SVH1</value>
-    </property>
-    <property>
-        <name>candle.date.from</name>
-        <value>20110111</value>
-    </property>
-    <property>
-        <name>candle.date.to</name>
-        <value>20110112</value>
+        <name>candle.width</name>
+        <value>1000</value>
     </property>
     <property>
         <name>candle.num.reducers</name>
-        <value>10</value>
+        <value>32</value>
     </property>
 </configuration>
